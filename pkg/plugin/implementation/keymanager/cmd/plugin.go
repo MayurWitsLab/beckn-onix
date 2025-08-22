@@ -19,6 +19,7 @@ func (k *keyManagerProvider) New(ctx context.Context, cache definition.Cache, re
 	config := &keymanager.Config{
 		VaultAddr: cfg["vaultAddr"],
 		KVVersion: cfg["kvVersion"],
+		MountPath: cfg["mountPath"],
 	}
 	log.Debugf(ctx, "Keymanager config mapped: %+v", cfg)
 	km, cleanup, err := newKeyManagerFunc(ctx, cache, registry, config)

@@ -23,6 +23,7 @@ import (
 type Config struct {
 	VaultAddr string
 	KVVersion string
+	MountPath string
 }
 
 // KeyMgr provides methods for managing cryptographic keys using Vault.
@@ -32,6 +33,7 @@ type KeyMgr struct {
 	Cache       definition.Cache
 	KvVersion   string
 	SecretPath  string
+	MountPath   string
 }
 
 var (
@@ -112,6 +114,7 @@ func New(ctx context.Context, cache definition.Cache, registryLookup definition.
 		Registry:    registryLookup,
 		Cache:       cache,
 		KvVersion:   cfg.KVVersion,
+		MountPath:   cfg.MountPath,
 	}
 
 	// Cleanup function to release KeyManager resources.
@@ -204,10 +207,14 @@ func (km *KeyMgr) GenerateKeyset() (*model.Keyset, error) {
 
 // getSecretPath constructs the Vault secret path for storing keys based on the KV version.
 func (km *KeyMgr) getSecretPath(keyID string) string {
-	if km.KvVersion == "v2" {
-		return fmt.Sprintf("secret/data/keys/%s", keyID)
+	mountPath := km.MountPath
+	if mountPath == "" {
+		mountPath = "secret"
 	}
-	return fmt.Sprintf("secret/keys/%s", keyID)
+	if km.KvVersion == "v2" {
+		return fmt.Sprintf("%s/data/keys/%s", mountPath, keyID)
+	}
+	return fmt.Sprintf("%s/keys/%s", mountPath, keyID)
 }
 
 // InsertKeyset stores the given keyset in Vault under the specified key ID.
